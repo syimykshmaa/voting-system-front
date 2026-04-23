@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useData } from "../context/DataContext";
 
 export default function ResultsPage({ selectedElectionId }) {
   const { elections, getElectionResults, votes } = useData();
   const [selected, setSelected] = useState(selectedElectionId || elections[0]?.id);
+
+  useEffect(() => {
+    if (!selected && elections.length > 0) {
+      setSelected(selectedElectionId || elections[0].id);
+    }
+  }, [selected, elections, selectedElectionId]);
 
   const data = selected ? getElectionResults(selected) : null;
 

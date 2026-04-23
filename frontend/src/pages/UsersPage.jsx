@@ -24,17 +24,34 @@ export default function UsersPage() {
   const openCreate = () => { setForm({ name: "", username: "", email: "", password: "", role: "USER" }); setEditUser(null); setShowForm(true); };
   const openEdit = (u) => { setForm({ name: u.name, username: u.username, email: u.email, password: u.password, role: u.role }); setEditUser(u); setShowForm(true); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.username || !form.email) return;
-    if (editUser) { updateUser(editUser.id, form); setMsg("User updated!"); }
-    else { addUser(form); setMsg("User created!"); }
-    setShowForm(false);
-    setTimeout(() => setMsg(""), 3000);
+    try {
+      if (editUser) {
+        await updateUser(editUser.id, form);
+        setMsg("User updated!");
+      } else {
+        await addUser(form);
+        setMsg("User created!");
+      }
+      setShowForm(false);
+      setTimeout(() => setMsg(""), 3000);
+    } catch (err) {
+      setMsg(err.message || "Failed to save user");
+      setTimeout(() => setMsg(""), 3000);
+    }
   };
 
-  const handleDelete = (id) => {
-    deleteUser(id); setConfirmDelete(null); setMsg("User deleted.");
-    setTimeout(() => setMsg(""), 3000);
+  const handleDelete = async (id) => {
+    try {
+      await deleteUser(id);
+      setConfirmDelete(null);
+      setMsg("User deleted.");
+      setTimeout(() => setMsg(""), 3000);
+    } catch (err) {
+      setMsg(err.message || "Failed to delete user");
+      setTimeout(() => setMsg(""), 3000);
+    }
   };
 
   const getUserVoteCount = (uid) => votes.filter((v) => v.userId === uid).length;

@@ -22,30 +22,45 @@ export default function ManageElectionsPage() {
     setEditId(e.id); setShowForm(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.startDate || !form.endDate) return;
-    if (editId) {
-      updateElection(editId, form);
-      setSuccessMsg("Election updated!");
-    } else {
-      createElection(form, currentUser.id);
-      setSuccessMsg("Election created!");
+    try {
+      if (editId) {
+        await updateElection(editId, form);
+        setSuccessMsg("Election updated!");
+      } else {
+        await createElection(form, currentUser.id);
+        setSuccessMsg("Election created!");
+      }
+      setShowForm(false);
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      setSuccessMsg(err.message || "Failed to save election");
+      setTimeout(() => setSuccessMsg(""), 3000);
     }
-    setShowForm(false);
-    setTimeout(() => setSuccessMsg(""), 3000);
   };
 
-  const handleDelete = (id) => {
-    deleteElection(id);
-    setConfirmDelete(null);
-    setSuccessMsg("Election deleted.");
-    setTimeout(() => setSuccessMsg(""), 3000);
+  const handleDelete = async (id) => {
+    try {
+      await deleteElection(id);
+      setConfirmDelete(null);
+      setSuccessMsg("Election deleted.");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      setSuccessMsg(err.message || "Failed to delete election");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    }
   };
 
-  const handleStatusChange = (id, status) => {
-    updateElection(id, { status });
-    setSuccessMsg("Status updated!");
-    setTimeout(() => setSuccessMsg(""), 3000);
+  const handleStatusChange = async (id, status) => {
+    try {
+      await updateElection(id, { status });
+      setSuccessMsg("Status updated!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      setSuccessMsg(err.message || "Failed to update status");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    }
   };
 
   const addCandidate = () => setForm(f => ({ ...f, candidates: [...f.candidates, { id: Date.now(), name: "", party: "", bio: "" }] }));

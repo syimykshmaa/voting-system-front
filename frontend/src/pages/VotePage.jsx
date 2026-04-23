@@ -14,10 +14,10 @@ export default function VotePage({ selectedElectionId, onNavigate }) {
   const activeElections = elections.filter((e) => e.status === "ACTIVE" && !hasVoted(currentUser.id, e.id));
   const election = elections.find((e) => e.id === selectedElection);
 
-  const handleVote = () => {
+  const handleVote = async () => {
     if (!selectedCandidate) return;
     try {
-      castVote(currentUser.id, selectedElection, selectedCandidate);
+      await castVote(currentUser.id, selectedElection, selectedCandidate);
       setSuccess(true);
       setConfirming(false);
     } catch (err) {

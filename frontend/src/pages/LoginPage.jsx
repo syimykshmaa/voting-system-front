@@ -1,26 +1,45 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
+const LOGIN_FORM = { username: "", password: "" };
+const REGISTER_FORM = { name: "", username: "", email: "", password: "" };
+
 export default function LoginPage({ onLogin }) {
-  const { login } = useAuth();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const { login, register } = useAuth();
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [form, setForm] = useState(LOGIN_FORM);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showHints, setShowHints] = useState(false);
+
+  const switchMode = (registerMode) => {
+    setIsRegisterMode(registerMode);
+    setError("");
+    setShowHints(false);
+    setForm(registerMode ? REGISTER_FORM : LOGIN_FORM);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      try {
-        login(form.username, form.password);
-        onLogin && onLogin();
-      } catch (err) {
-        setError(err.message);
+    try {
+      if (isRegisterMode) {
+        await register({
+          name: form.name,
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        });
+      } else {
+        await login(form.username, form.password);
       }
+      onLogin && onLogin();
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   const quickLogin = (username, password) => {
@@ -42,7 +61,38 @@ export default function LoginPage({ onLogin }) {
           <p style={styles.subtitle}>Secure Democratic Platform</p>
         </div>
 
+        <div style={styles.modeSwitch}>
+          <button
+            type="button"
+            style={{ ...styles.modeBtn, ...(!isRegisterMode ? styles.modeBtnActive : {}) }}
+            onClick={() => switchMode(false)}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            style={{ ...styles.modeBtn, ...(isRegisterMode ? styles.modeBtnActive : {}) }}
+            onClick={() => switchMode(true)}
+          >
+            Register
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} style={styles.form}>
+          {isRegisterMode && (
+            <div style={styles.field}>
+              <label style={styles.label}>Full Name</label>
+              <input
+                style={styles.input}
+                type="text"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+          )}
+
           <div style={styles.field}>
             <label style={styles.label}>Username</label>
             <input
@@ -54,6 +104,21 @@ export default function LoginPage({ onLogin }) {
               required
             />
           </div>
+
+          {isRegisterMode && (
+            <div style={styles.field}>
+              <label style={styles.label}>Email</label>
+              <input
+                style={styles.input}
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="Enter email"
+                required
+              />
+            </div>
+          )}
+
           <div style={styles.field}>
             <label style={styles.label}>Password</label>
             <input
@@ -69,30 +134,38 @@ export default function LoginPage({ onLogin }) {
           {error && <div style={styles.error}>{error}</div>}
 
           <button type="submit" style={styles.btn} disabled={loading}>
-            {loading ? "Authenticating..." : "Sign In →"}
+            {loading
+              ? (isRegisterMode ? "Creating account..." : "Authenticating...")
+              : (isRegisterMode ? "Create Account →" : "Sign In →")}
           </button>
         </form>
 
-        <div style={styles.hintsSection}>
-          <button style={styles.hintToggle} onClick={() => setShowHints(!showHints)}>
-            {showHints ? "Hide" : "Show"} demo accounts
-          </button>
-          {showHints && (
-            <div style={styles.hints}>
-              {[
-                { username: "admin", password: "admin123", role: "ADMIN", color: "#e74c3c" },
-                { username: "manager", password: "manager123", role: "MANAGER", color: "#f39c12" },
-                { username: "john", password: "john123", role: "USER", color: "#2ecc71" },
-              ].map((acc) => (
-                <button key={acc.username} style={{ ...styles.hintBtn, borderColor: acc.color + "55" }}
-                  onClick={() => quickLogin(acc.username, acc.password)}>
-                  <span style={{ ...styles.roleBadge, background: acc.color + "22", color: acc.color }}>{acc.role}</span>
-                  <span style={{ color: "#ccc", fontSize: 13 }}>{acc.username}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {!isRegisterMode && (
+          <div style={styles.hintsSection}>
+            <button type="button" style={styles.hintToggle} onClick={() => setShowHints(!showHints)}>
+              {showHints ? "Hide" : "Show"} demo accounts
+            </button>
+            {showHints && (
+              <div style={styles.hints}>
+                {[
+                  { username: "admin", password: "admin123", role: "ADMIN", color: "#e74c3c" },
+                  { username: "manager", password: "manager123", role: "MANAGER", color: "#f39c12" },
+                  { username: "john", password: "john123", role: "USER", color: "#2ecc71" },
+                ].map((acc) => (
+                  <button
+                    type="button"
+                    key={acc.username}
+                    style={{ ...styles.hintBtn, borderColor: acc.color + "55" }}
+                    onClick={() => quickLogin(acc.username, acc.password)}
+                  >
+                    <span style={{ ...styles.roleBadge, background: acc.color + "22", color: acc.color }}>{acc.role}</span>
+                    <span style={{ color: "#ccc", fontSize: 13 }}>{acc.username}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={styles.footer}>
@@ -125,7 +198,7 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20,
     padding: "40px 36px", boxShadow: "0 40px 80px rgba(0,0,0,0.6)",
   },
-  logoArea: { textAlign: "center", marginBottom: 32 },
+  logoArea: { textAlign: "center", marginBottom: 24 },
   logoIcon: {
     width: 64, height: 64, borderRadius: 16, margin: "0 auto 16px",
     background: "linear-gradient(135deg, #7c3aed, #2563eb)",
@@ -134,6 +207,30 @@ const styles = {
   },
   title: { color: "#fff", fontSize: 28, fontWeight: 800, margin: "0 0 6px", letterSpacing: "-0.5px" },
   subtitle: { color: "#888", fontSize: 14, margin: 0 },
+  modeSwitch: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 8,
+    marginBottom: 16,
+    background: "rgba(255,255,255,0.02)",
+    borderRadius: 10,
+    padding: 6,
+    border: "1px solid rgba(255,255,255,0.08)",
+  },
+  modeBtn: {
+    border: "none",
+    borderRadius: 8,
+    padding: "8px 12px",
+    background: "transparent",
+    color: "#888",
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 700,
+  },
+  modeBtnActive: {
+    background: "rgba(124,58,237,0.2)",
+    color: "#c4a5fa",
+  },
   form: { display: "flex", flexDirection: "column", gap: 16 },
   field: { display: "flex", flexDirection: "column", gap: 6 },
   label: { color: "#aaa", fontSize: 13, fontWeight: 500 },
