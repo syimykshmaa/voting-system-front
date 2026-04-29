@@ -1,4 +1,8 @@
-const API_URL = import.meta.env.VITE_API_URL || "https://voting-system-production-2a54.up.railway.app";
+const DEFAULT_API_URL = "https://voting-system-production-2a54.up.railway.app";
+const configuredApiUrl = import.meta.env.VITE_API_URL;
+const API_URL = configuredApiUrl && configuredApiUrl.startsWith("http")
+  ? configuredApiUrl.replace(/\/$/, "")
+  : DEFAULT_API_URL;
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("voting_token");
@@ -11,7 +15,10 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const url = `${API_URL}${normalizedPath}`;
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });
