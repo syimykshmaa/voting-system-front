@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "https://voting-system-production-2a54.up.railway.app/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://voting-system-production-2a54.up.railway.app";
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("voting_token");
