@@ -1,8 +1,11 @@
-const DEFAULT_API_URL = "https://voting-system-production-2a54.up.railway.app";
+const DEFAULT_API_URL = "https://voting-system-production-2a54.up.railway.app/api";
 const configuredApiUrl = import.meta.env.VITE_API_URL;
-const API_URL = configuredApiUrl && configuredApiUrl.startsWith("http")
+const rawApiUrl = configuredApiUrl && configuredApiUrl.startsWith("http")
   ? configuredApiUrl.replace(/\/$/, "")
   : DEFAULT_API_URL;
+const API_URL = rawApiUrl.endsWith("/api")
+  ? rawApiUrl
+  : `${rawApiUrl}/api`;
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("voting_token");
