@@ -2,6 +2,8 @@ https://github.com/syimykshmaa/voting-system-front.git - google drive
 
 https://canva.link/sbnrbo59thc2wrd - presentation
 
+https://voting-system-front-production.up.railway.app/ - deploy
+
 # Voting System (Frontend + Backend + MongoDB)
 
 Проект разделен на две части:
